@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/CeresDB/ceresdb-client-go/ceresdb"
+	"github.com/CeresDB/ceresdb-client-go/types"
 	"github.com/timescale/tsbs/pkg/data/usecases/common"
 	"github.com/timescale/tsbs/pkg/targets"
 )
@@ -61,7 +62,7 @@ func (d *dbCreator) CreateDB(dbName string) error {
 	return nil
 }
 
-func (d *dbCreator) createTable(client *ceresdb.Client, tableName string,
+func (d *dbCreator) createTable(client ceresdb.Client, tableName string,
 	fieldColumns []string) error {
 	tagTypes, tagKeys := d.headers.TagTypes, d.headers.TagKeys
 	columnDefs := make([]string, 0, len(fieldColumns)+len(tagTypes)+1) // one more timestamp column
@@ -89,9 +90,11 @@ storage_format = '%s'
 );
 
 `
-	sql := fmt.Sprintf(tmpl, tableName, strings.Join(columnDefs, ","), d.config.PrimaryKeys, d.config.RowGroupSize, d.config.StorageFormat)
+	req := types.QueryRequest{}
+	req.Metrics = []string{tableName}
+	req.Ql = fmt.Sprintf(tmpl, tableName, strings.Join(columnDefs, ","), d.config.PrimaryKeys, d.config.RowGroupSize, d.config.StorageFormat)
 	// fmt.Printf("sql = %s\n", sql)
-	_, err := client.Query(context.TODO(), sql)
+	_, err := client.Query(context.TODO(), req)
 	return err
 }
 

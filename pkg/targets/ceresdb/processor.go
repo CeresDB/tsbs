@@ -11,7 +11,7 @@ import (
 
 type processor struct {
 	addr   string
-	client *ceresdb.Client
+	client ceresdb.Client
 }
 
 func (p *processor) Init(workerNum int, doLoad, hashWorkers bool) {
@@ -25,7 +25,7 @@ func (p *processor) Init(workerNum int, doLoad, hashWorkers bool) {
 func (p *processor) ProcessBatch(b targets.Batch, doLoad bool) (metricCount, rowCount uint64) {
 	batch := b.(*batch)
 	if !doLoad {
-		return batch.metrics, batch.rows
+		return batch.metricCount, batch.rowCount
 	}
 	mc, rc := p.do(batch)
 	return mc, rc
@@ -33,11 +33,11 @@ func (p *processor) ProcessBatch(b targets.Batch, doLoad bool) (metricCount, row
 
 func (p *processor) do(b *batch) (uint64, uint64) {
 	for {
-		ret, err := p.client.Write(context.TODO(), b.points)
+		ret, err := p.client.Write(context.TODO(), b.rows)
 
 		if err == nil {
 			// log.Printf("success :%d\n", ret)
-			return b.metrics, b.rows
+			return b.metricCount, b.rowCount
 		}
 
 		log.Printf("Retrying, write failed. err:%s, ret:%d", err, ret)

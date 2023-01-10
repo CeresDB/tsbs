@@ -4,19 +4,20 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/influxdata/line-protocol/v2/lineprotocol"
 	"github.com/CeresDB/ceresdb-client-go/ceresdb"
+	"github.com/CeresDB/ceresdb-client-go/types"
+	"github.com/influxdata/line-protocol/v2/lineprotocol"
 	"github.com/timescale/tsbs/pkg/data"
 )
 
 type batch struct {
-	rows    uint64
-	metrics uint64
-	points  []ceresdb.Point
+	rowCount    uint64
+	metricCount uint64
+	rows        []*types.Row
 }
 
 func (b *batch) Len() uint {
-	return uint(b.rows)
+	return uint(b.rowCount)
 }
 
 func unixTimestampMs(t time.Time) int64 {
@@ -38,12 +39,14 @@ func (b *batch) Append(item data.LoadedPoint) {
 	dec := lineprotocol.NewDecoderWithBytes(data)
 
 	for dec.Next() {
-		b.rows++
+		b.rowCount++
 		m, err := dec.Measurement()
 		if err != nil {
 			panic(err)
 		}
-		tags := make(map[string]string)
+
+		builder := ceresdb.NewRowBuilder(string(m))
+
 		for {
 			key, val, err := dec.NextTag()
 			if err != nil {
@@ -52,9 +55,9 @@ func (b *batch) Append(item data.LoadedPoint) {
 			if key == nil {
 				break
 			}
-			tags[string(key)] = string(val)
+			builder.AddTag(string(key), string(val))
 		}
-		fields := make(map[string]float64)
+
 		for {
 			key, val, err := dec.NextField()
 			if err != nil {
@@ -63,19 +66,22 @@ func (b *batch) Append(item data.LoadedPoint) {
 			if key == nil {
 				break
 			}
-			fields[string(key)] = valueToFloat64(val)
+			builder.AddField(string(key), valueToFloat64(val))
 		}
+
 		t, err := dec.Time(lineprotocol.Nanosecond, time.Time{})
 		if err != nil {
 			panic(err)
 		}
-		b.metrics += uint64(len(fields))
+		builder.SetTimestamp(unixTimestampMs(t))
 
-		b.points = append(b.points, ceresdb.Point{
-			Metric:    string(m),
-			Tags:      tags,
-			Fields:    fields,
-			Timestamp: unixTimestampMs(t),
-		})
+		row, err := builder.Build()
+		if err != nil {
+			panic(err)
+		}
+
+		b.metricCount += uint64(len(row.Fields))
+
+		b.rows = append(b.rows, row)
 	}
 }

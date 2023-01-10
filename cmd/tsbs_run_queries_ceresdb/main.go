@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/CeresDB/ceresdb-client-go/ceresdb"
+	"github.com/CeresDB/ceresdb-client-go/types"
 	"github.com/blagojts/viper"
 	"github.com/spf13/pflag"
 	"github.com/timescale/tsbs/internal/utils"
@@ -69,7 +70,7 @@ type queryExecutorOptions struct {
 
 // query.Processor interface implementation
 type processor struct {
-	db   *ceresdb.Client
+	db   ceresdb.Client
 	opts *queryExecutorOptions
 }
 
@@ -110,7 +111,10 @@ func (p *processor) ProcessQuery(q query.Query, isWarm bool) ([]*query.Stat, err
 	}
 
 	// Main action - run the query
-	rows, err := p.db.Query(context.TODO(), sql)
+	req := types.QueryRequest{}
+	req.Metrics = []string{string(ceresdbQuery.Table)}
+	req.Ql = sql
+	rows, err := p.db.Query(context.TODO(), req)
 	if err != nil {
 		return nil, err
 	}

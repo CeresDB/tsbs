@@ -3,7 +3,7 @@ module github.com/timescale/tsbs
 go 1.14
 
 require (
-	github.com/CeresDB/ceresdb-client-go v0.0.0-20220919075902-fed3f5b9928b
+	github.com/CeresDB/ceresdb-client-go v0.0.0-20221213060611-b4b4143b36d6
 	github.com/HdrHistogram/hdrhistogram-go v1.0.0
 	github.com/SiriDB/go-siridb-connector v0.0.0-20190110105621-86b34c44c921
 	github.com/StackExchange/wmi v0.0.0-20190523213315-cbe66965904d // indirect
@@ -13,10 +13,10 @@ require (
 	github.com/globalsign/mgo v0.0.0-20181015135952-eeefdecb41b8
 	github.com/go-ole/go-ole v1.2.4 // indirect
 	github.com/gocql/gocql v0.0.0-20190810123941-df4b9cc33030
-	github.com/golang/protobuf v1.5.0
-	github.com/golang/snappy v0.0.1
+	github.com/golang/protobuf v1.5.2
+	github.com/golang/snappy v0.0.4
 	github.com/google/flatbuffers v1.11.0
-	github.com/google/go-cmp v0.5.5
+	github.com/google/go-cmp v0.5.8
 	github.com/influxdata/line-protocol/v2 v2.2.1
 	github.com/jackc/pgx/v4 v4.8.0
 	github.com/jmoiron/sqlx v1.2.1-0.20190826204134-d7d95172beb5
@@ -32,7 +32,7 @@ require (
 	github.com/transceptor-technology/go-qpack v0.0.0-20190116123619-49a14b216a45
 	github.com/valyala/fasthttp v1.15.1
 	go.uber.org/atomic v1.6.0
-	golang.org/x/net v0.0.0-20200904194848-62affa334b73
+	golang.org/x/net v0.0.0-20220722155237-a158d28d115b
 	golang.org/x/time v0.0.0-20200630173020-3af7569d3a1e
 	gopkg.in/yaml.v2 v2.3.0
 )
