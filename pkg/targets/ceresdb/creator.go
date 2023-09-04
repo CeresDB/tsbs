@@ -49,7 +49,12 @@ func (d *dbCreator) DBExists(dbName string) bool { return true }
 
 // loader.DBCreator interface implementation
 func (d *dbCreator) CreateDB(dbName string) error {
-	client, err := ceresdb.NewClient(d.config.CeresdbAddr, ceresdb.Direct, ceresdb.WithDefaultDatabase("public"))
+	a_mode := ceresdb.Direct
+	if d.config.AccessMode == "proxy" {
+		println("new client in proxy mode in creator")
+		a_mode = ceresdb.Proxy
+	}
+	client, err := ceresdb.NewClient(d.config.CeresdbAddr, a_mode, ceresdb.WithDefaultDatabase("public"))
 	if err != nil {
 		return err
 	}
@@ -78,19 +83,30 @@ func (d *dbCreator) createTable(client ceresdb.Client, tableName string,
 		columnDefs = append(columnDefs, fmt.Sprintf("`%s` double", field))
 	}
 
-	tmpl := `
-create table if not exists %s (
-%s,
-primary key(%s)
-) with (
-enable_ttl = 'false',
-num_rows_per_row_group='%d',
-storage_format = '%s'
-);
+	// Tmpls
+	cr_tmpl := `create table if not exists %s (
+		%s,
+		primary key(%s)
+		)`
+	p_tmpl := `partition by key (%s) partitions 4`
+	w_tmpl := `with (
+		enable_ttl = 'false',
+		num_rows_per_row_group='%d',
+		storage_format = '%s'
+		);`
 
-`
-	sql := fmt.Sprintf(tmpl, tableName, strings.Join(columnDefs, ","), d.config.PrimaryKeys, d.config.RowGroupSize, d.config.StorageFormat)
-	// fmt.Printf("sql = %s\n", sql)
+	// Make sql
+	cr := fmt.Sprintf(cr_tmpl, tableName, strings.Join(columnDefs, ","), d.config.PrimaryKeys) + "\n"
+	p := ""
+	if d.config.PartitionKeys != "" {
+		p = fmt.Sprintf(p_tmpl, d.config.PartitionKeys) + "\n"
+	}
+	w := fmt.Sprintf(w_tmpl, d.config.RowGroupSize, d.config.StorageFormat)
+
+	sql := cr + p + w
+	fmt.Printf("sql = %s\n", sql)
+
+	// Execute
 	_, err := client.SQLQuery(context.TODO(), ceresdb.SQLQueryRequest{
 		Tables: []string{tableName},
 		SQL:    sql,

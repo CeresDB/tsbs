@@ -33,17 +33,20 @@ func initProgramOptions() (*ceresdb.SpecificConfig, load.BenchmarkRunner, *load.
 	storageFormat := viper.GetString("storage-format")
 	primaryKeys := viper.GetString("primary-keys")
 	rowGroupSize := viper.GetInt64("row-group-size")
+	partitionKeys := viper.GetString("partition-keys")
 	loader := load.GetBenchmarkRunner(loaderConf)
 	return &ceresdb.SpecificConfig{
 		CeresdbAddr:   ceresdbAddr,
 		StorageFormat: storageFormat,
 		RowGroupSize:  rowGroupSize,
 		PrimaryKeys:   primaryKeys,
+		PartitionKeys: partitionKeys,
 	}, loader, &loaderConf
 }
 
 func main() {
 	vmConf, loader, loaderConf := initProgramOptions()
+	println(vmConf.PartitionKeys)
 	benchmark, err := ceresdb.NewBenchmark(vmConf, &source.DataSourceConfig{
 		Type: source.FileDataSourceType,
 		File: &source.FileDataSourceConfig{Location: loaderConf.FileName},

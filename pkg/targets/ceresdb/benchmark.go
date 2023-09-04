@@ -18,6 +18,7 @@ type SpecificConfig struct {
 	StorageFormat string `yaml:"storageFormat" mapstructure:"storageFormat"`
 	RowGroupSize  int64  `yaml:"rowGroupSize" mapstructure:"rowGroupSize"`
 	PrimaryKeys   string `yaml:"primaryKeys" mapstructure:"primaryKeys"`
+	PartitionKeys string `yaml:"partitionKeys" mapstructure:"partitionKeys"`
 }
 
 func parseSpecificConfig(v *viper.Viper) (*SpecificConfig, error) {

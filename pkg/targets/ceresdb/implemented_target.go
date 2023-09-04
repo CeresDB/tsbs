@@ -47,6 +47,11 @@ func (vm vmTarget) TargetSpecificFlags(flagPrefix string, flagSet *pflag.FlagSet
 		"tsid,timestamp",
 		"Primary keys used when create table",
 	)
+	flagSet.String(
+		flagPrefix+"partition-keys",
+		"",
+		"Partition keys used when create partitioned table",
+	)
 }
 
 func (vm vmTarget) TargetName() string {
