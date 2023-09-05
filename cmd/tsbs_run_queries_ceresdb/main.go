@@ -78,9 +78,9 @@ type queryExecutorOptions struct {
 
 // query.Processor interface implementation
 type processor struct {
-	db     ceresdb.Client
-	opts   *queryExecutorOptions
-	o_resp *os.File
+	db      ceresdb.Client
+	opts    *queryExecutorOptions
+	outResp *os.File
 }
 
 // query.Processor interface implementation
@@ -90,23 +90,22 @@ func newProcessor() query.Processor {
 
 // query.Processor interface implementation
 func (p *processor) Init(workerNumber int) {
-	a_mode := ceresdb.Direct
+	aMode := ceresdb.Direct
 	if accessMode == "proxy" {
-		println("new client in proxy mode in querier")
-		a_mode = ceresdb.Proxy
+		aMode = ceresdb.Proxy
 	}
-	client, err := ceresdb.NewClient(ceresdbAddr, a_mode, ceresdb.WithDefaultDatabase("public"))
+	client, err := ceresdb.NewClient(ceresdbAddr, aMode, ceresdb.WithDefaultDatabase("public"))
 	if err != nil {
 		panic(err)
 	}
 	p.db = client
 
 	if responsesFile != "" {
-		o_resp, err := os.Create(responsesFile)
+		outResp, err := os.Create(responsesFile)
 		if err != nil {
 			panic(err)
 		}
-		p.o_resp = o_resp
+		p.outResp = outResp
 	}
 
 	p.opts = &queryExecutorOptions{
@@ -148,8 +147,8 @@ func (p *processor) ProcessQuery(q query.Query, isWarm bool) ([]*query.Stat, err
 	}
 	if p.opts.printResponse {
 		resp := fmt.Sprintf("###query\n sql: %v\naffected: %v\nrows: %v\n\n", rows.SQL, rows.AffectedRows, rows.Rows)
-		if p.o_resp != nil {
-			p.o_resp.WriteString(resp)
+		if p.outResp != nil {
+			p.outResp.WriteString(resp)
 		} else {
 			fmt.Print(resp)
 		}

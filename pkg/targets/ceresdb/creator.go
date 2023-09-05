@@ -49,11 +49,11 @@ func (d *dbCreator) DBExists(dbName string) bool { return true }
 
 // loader.DBCreator interface implementation
 func (d *dbCreator) CreateDB(dbName string) error {
-	a_mode := ceresdb.Direct
+	aMode := ceresdb.Direct
 	if d.config.AccessMode == "proxy" {
-		a_mode = ceresdb.Proxy
+		aMode = ceresdb.Proxy
 	}
-	client, err := ceresdb.NewClient(d.config.CeresdbAddr, a_mode, ceresdb.WithDefaultDatabase("public"))
+	client, err := ceresdb.NewClient(d.config.CeresdbAddr, aMode, ceresdb.WithDefaultDatabase("public"))
 	if err != nil {
 		return err
 	}
