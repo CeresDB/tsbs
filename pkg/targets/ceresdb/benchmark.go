@@ -47,11 +47,7 @@ func NewBenchmark(config *SpecificConfig, dataSourceConfig *source.DataSourceCon
 		scanner: bufio.NewScanner(br),
 	}
 
-	aMode := ceresdb.Direct
-	if config.AccessMode == "proxy" {
-		aMode = ceresdb.Proxy
-	}
-	client, err := ceresdb.NewClient(config.CeresdbAddr, aMode, ceresdb.WithDefaultDatabase("public"))
+	client, err := NewClient(config.CeresdbAddr, config.AccessMode, ceresdb.WithDefaultDatabase("public"))
 	if err != nil {
 		panic(err)
 	}

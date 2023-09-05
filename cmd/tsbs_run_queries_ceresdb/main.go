@@ -10,11 +10,12 @@ import (
 	"os"
 	"time"
 
-	"github.com/CeresDB/ceresdb-client-go/ceresdb"
+	ceresdbSdk "github.com/CeresDB/ceresdb-client-go/ceresdb"
 	"github.com/blagojts/viper"
 	"github.com/spf13/pflag"
 	"github.com/timescale/tsbs/internal/utils"
 	"github.com/timescale/tsbs/pkg/query"
+	"github.com/timescale/tsbs/pkg/targets/ceresdb"
 )
 
 // Program option vars:
@@ -62,7 +63,6 @@ func init() {
 	showExplain = viper.GetBool("show-explain")
 	accessMode = viper.GetString("access-mode")
 	responsesFile = viper.GetString("responses-file")
-
 	runner = query.NewBenchmarkRunner(config)
 }
 
@@ -78,9 +78,9 @@ type queryExecutorOptions struct {
 
 // query.Processor interface implementation
 type processor struct {
-	db      ceresdb.Client
-	opts    *queryExecutorOptions
-	outResp *os.File
+	db               ceresdbSdk.Client
+	opts             *queryExecutorOptions
+	queryResultsFile *os.File
 }
 
 // query.Processor interface implementation
@@ -90,22 +90,18 @@ func newProcessor() query.Processor {
 
 // query.Processor interface implementation
 func (p *processor) Init(workerNumber int) {
-	aMode := ceresdb.Direct
-	if accessMode == "proxy" {
-		aMode = ceresdb.Proxy
-	}
-	client, err := ceresdb.NewClient(ceresdbAddr, aMode, ceresdb.WithDefaultDatabase("public"))
+	client, err := ceresdb.NewClient(ceresdbAddr, accessMode, ceresdbSdk.WithDefaultDatabase("public"))
 	if err != nil {
 		panic(err)
 	}
 	p.db = client
 
 	if responsesFile != "" {
-		outResp, err := os.Create(responsesFile)
+		queryResultsFile, err := os.Create(responsesFile)
 		if err != nil {
 			panic(err)
 		}
-		p.outResp = outResp
+		p.queryResultsFile = queryResultsFile
 	}
 
 	p.opts = &queryExecutorOptions{
@@ -133,7 +129,7 @@ func (p *processor) ProcessQuery(q query.Query, isWarm bool) ([]*query.Stat, err
 	}
 
 	// Main action - run the query
-	rows, err := p.db.SQLQuery(context.TODO(), ceresdb.SQLQueryRequest{
+	rows, err := p.db.SQLQuery(context.TODO(), ceresdbSdk.SQLQueryRequest{
 		Tables: []string{string(ceresdbQuery.Table)},
 		SQL:    sql,
 	})
@@ -146,11 +142,11 @@ func (p *processor) ProcessQuery(q query.Query, isWarm bool) ([]*query.Stat, err
 		fmt.Println(sql)
 	}
 	if p.opts.printResponse {
-		resp := fmt.Sprintf("###query\n sql: %v\naffected: %v\nrows: %v\n\n", rows.SQL, rows.AffectedRows, rows.Rows)
-		if p.outResp != nil {
-			p.outResp.WriteString(resp)
+		query_res := fmt.Sprintf("###query\n sql: %v\naffected: %v\nrows: %v\n\n", rows.SQL, rows.AffectedRows, rows.Rows)
+		if p.queryResultsFile != nil {
+			p.queryResultsFile.WriteString(query_res)
 		} else {
-			fmt.Print(resp)
+			fmt.Print(query_res)
 		}
 	}
 
