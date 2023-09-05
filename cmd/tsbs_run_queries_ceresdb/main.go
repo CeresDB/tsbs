@@ -7,6 +7,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/CeresDB/ceresdb-client-go/ceresdb"
@@ -23,6 +24,8 @@ var (
 	showExplain bool
 
 	accessMode string
+
+	responsesFile string
 )
 
 // Global vars:
@@ -42,6 +45,7 @@ func init() {
 	)
 	pflag.Bool("show-explain", false, "Print out the EXPLAIN output for sample query")
 	pflag.String("access-mode", "direct", "Access mode of ceresdb client")
+	pflag.String("responses-file", "", "Write responses to this file if enable responses printing")
 	pflag.Parse()
 
 	err := utils.SetupConfigFile()
@@ -57,6 +61,7 @@ func init() {
 	ceresdbAddr = viper.GetString("ceresdb-addr")
 	showExplain = viper.GetBool("show-explain")
 	accessMode = viper.GetString("access-mode")
+	responsesFile = viper.GetString("responses-file")
 
 	runner = query.NewBenchmarkRunner(config)
 }
@@ -73,8 +78,9 @@ type queryExecutorOptions struct {
 
 // query.Processor interface implementation
 type processor struct {
-	db   ceresdb.Client
-	opts *queryExecutorOptions
+	db     ceresdb.Client
+	opts   *queryExecutorOptions
+	o_resp *os.File
 }
 
 // query.Processor interface implementation
@@ -94,6 +100,15 @@ func (p *processor) Init(workerNumber int) {
 		panic(err)
 	}
 	p.db = client
+
+	if responsesFile != "" {
+		o_resp, err := os.Create(responsesFile)
+		if err != nil {
+			panic(err)
+		}
+		p.o_resp = o_resp
+	}
+
 	p.opts = &queryExecutorOptions{
 		showExplain:   false,
 		debug:         runner.DebugLevel() > 0,
@@ -132,7 +147,12 @@ func (p *processor) ProcessQuery(q query.Query, isWarm bool) ([]*query.Stat, err
 		fmt.Println(sql)
 	}
 	if p.opts.printResponse {
-		fmt.Printf("request = %v\n", rows)
+		resp := fmt.Sprintf("###query\n sql: %v\naffected: %v\nrows: %v\n\n", rows.SQL, rows.AffectedRows, rows.Rows)
+		if p.o_resp != nil {
+			p.o_resp.WriteString(resp)
+		} else {
+			fmt.Print(resp)
+		}
 	}
 
 	took := float64(time.Since(start).Nanoseconds()) / 1e6
