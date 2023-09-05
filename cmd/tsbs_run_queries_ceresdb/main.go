@@ -8,6 +8,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	ceresdbSdk "github.com/CeresDB/ceresdb-client-go/ceresdb"
@@ -142,7 +143,8 @@ func (p *processor) ProcessQuery(q query.Query, isWarm bool) ([]*query.Stat, err
 		fmt.Println(sql)
 	}
 	if p.opts.printResponse {
-		query_res := fmt.Sprintf("###query\n sql: %v\naffected: %v\nrows: %v\n\n", rows.SQL, rows.AffectedRows, rows.Rows)
+		rowsStr := RowsToStr(rows.Rows)
+		query_res := fmt.Sprintf("###query\n sql: %v\naffected: %v\nrows: \n%s\n\n", rows.SQL, rows.AffectedRows, rowsStr)
 		if p.queryResultsFile != nil {
 			p.queryResultsFile.WriteString(query_res)
 		} else {
@@ -156,4 +158,18 @@ func (p *processor) ProcessQuery(q query.Query, isWarm bool) ([]*query.Stat, err
 	stat.Init(q.HumanLabelName(), took)
 
 	return []*query.Stat{stat}, err
+}
+
+func RowsToStr(rows []ceresdbSdk.Row) string {
+	rowLen := len(rows)
+	if rowLen == 0 {
+		return ""
+	}
+
+	rowStrs := make([]string, 0, len(rows))
+	for _, row := range rows {
+		rowStrs = append(rowStrs, fmt.Sprintf("%v", row))
+	}
+
+	return strings.Join(rowStrs, "\n")
 }
