@@ -48,7 +48,6 @@ func initProgramOptions() (*ceresdb.SpecificConfig, load.BenchmarkRunner, *load.
 
 func main() {
 	vmConf, loader, loaderConf := initProgramOptions()
-	println(vmConf.PartitionKeys)
 	benchmark, err := ceresdb.NewBenchmark(vmConf, &source.DataSourceConfig{
 		Type: source.FileDataSourceType,
 		File: &source.FileDataSourceConfig{Location: loaderConf.FileName},

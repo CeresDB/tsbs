@@ -49,7 +49,6 @@ func NewBenchmark(config *SpecificConfig, dataSourceConfig *source.DataSourceCon
 
 	a_mode := ceresdb.Direct
 	if config.AccessMode == "proxy" {
-		println("new client in proxy mode in loader")
 		a_mode = ceresdb.Proxy
 	}
 	client, err := ceresdb.NewClient(config.CeresdbAddr, a_mode, ceresdb.WithDefaultDatabase("public"))
