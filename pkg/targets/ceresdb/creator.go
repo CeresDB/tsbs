@@ -86,25 +86,23 @@ func (d *dbCreator) createTable(client ceresdb.Client, tableName string,
 	// 	+ Create part
 	// 	+ Partition part
 	// 	+ With part
-	cr_tmpl := `create table if not exists %s (
+	crTmpl := `create table if not exists %s (
 		%s,
 		primary key(%s)
 		)`
-	part_tmpl := `partition by key (%s) partitions 4`
-	with_tmpl := `with (
+	partTmpl := `partition by key (%s) partitions 4`
+	withTmpl := `with (
 		enable_ttl = 'false',
 		num_rows_per_row_group='%d',
 		storage_format = '%s'
 		);`
 
 	// Make sql
-	sql := fmt.Sprintf(cr_tmpl, tableName, strings.Join(columnDefs, ","), d.config.PrimaryKeys) + "\n"
+	sql := fmt.Sprintf(crTmpl, tableName, strings.Join(columnDefs, ","), d.config.PrimaryKeys) + "\n"
 	if d.config.PartitionKeys != "" {
-		sql = sql + fmt.Sprintf(part_tmpl, d.config.PartitionKeys) + "\n"
+		sql = sql + fmt.Sprintf(partTmpl, d.config.PartitionKeys) + "\n"
 	}
-	sql = sql + fmt.Sprintf(with_tmpl, d.config.RowGroupSize, d.config.StorageFormat)
-
-	fmt.Printf("sql = %s\n", sql)
+	sql = sql + fmt.Sprintf(withTmpl, d.config.RowGroupSize, d.config.StorageFormat)
 
 	// Execute
 	_, err := client.SQLQuery(context.TODO(), ceresdb.SQLQueryRequest{
