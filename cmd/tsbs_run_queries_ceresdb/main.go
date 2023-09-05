@@ -21,6 +21,8 @@ var (
 	ceresdbAddr string
 
 	showExplain bool
+
+	accessMode string
 )
 
 // Global vars:
@@ -39,6 +41,7 @@ func init() {
 		"ceresdb gRPC endpoint",
 	)
 	pflag.Bool("show-explain", false, "Print out the EXPLAIN output for sample query")
+	pflag.String("access-mode", "direct", "Access mode of ceresdb client")
 	pflag.Parse()
 
 	err := utils.SetupConfigFile()
@@ -53,6 +56,7 @@ func init() {
 
 	ceresdbAddr = viper.GetString("ceresdb-addr")
 	showExplain = viper.GetBool("show-explain")
+	accessMode = viper.GetString("access-mode")
 
 	runner = query.NewBenchmarkRunner(config)
 }
@@ -80,7 +84,12 @@ func newProcessor() query.Processor {
 
 // query.Processor interface implementation
 func (p *processor) Init(workerNumber int) {
-	client, err := ceresdb.NewClient(ceresdbAddr, ceresdb.Direct, ceresdb.WithDefaultDatabase("public"))
+	a_mode := ceresdb.Direct
+	if accessMode == "proxy" {
+		println("new client in proxy mode in querier")
+		a_mode = ceresdb.Proxy
+	}
+	client, err := ceresdb.NewClient(ceresdbAddr, a_mode, ceresdb.WithDefaultDatabase("public"))
 	if err != nil {
 		panic(err)
 	}

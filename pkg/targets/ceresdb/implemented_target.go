@@ -52,6 +52,11 @@ func (vm vmTarget) TargetSpecificFlags(flagPrefix string, flagSet *pflag.FlagSet
 		"",
 		"Partition keys used when create partitioned table",
 	)
+	flagSet.String(
+		flagPrefix+"access-mode",
+		"direct",
+		"Access mode of ceresdb client",
+	)
 }
 
 func (vm vmTarget) TargetName() string {

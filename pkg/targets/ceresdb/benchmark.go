@@ -19,6 +19,7 @@ type SpecificConfig struct {
 	RowGroupSize  int64  `yaml:"rowGroupSize" mapstructure:"rowGroupSize"`
 	PrimaryKeys   string `yaml:"primaryKeys" mapstructure:"primaryKeys"`
 	PartitionKeys string `yaml:"partitionKeys" mapstructure:"partitionKeys"`
+	AccessMode    string `yaml:"accessMode" mapstructure:"accessMode"`
 }
 
 func parseSpecificConfig(v *viper.Viper) (*SpecificConfig, error) {
@@ -45,7 +46,13 @@ func NewBenchmark(config *SpecificConfig, dataSourceConfig *source.DataSourceCon
 	dataSource := &fileDataSource{
 		scanner: bufio.NewScanner(br),
 	}
-	client, err := ceresdb.NewClient(config.CeresdbAddr, ceresdb.Direct, ceresdb.WithDefaultDatabase("public"))
+
+	a_mode := ceresdb.Direct
+	if config.AccessMode == "proxy" {
+		println("new client in proxy mode in loader")
+		a_mode = ceresdb.Proxy
+	}
+	client, err := ceresdb.NewClient(config.CeresdbAddr, a_mode, ceresdb.WithDefaultDatabase("public"))
 	if err != nil {
 		panic(err)
 	}
