@@ -90,7 +90,8 @@ func (d *dbCreator) createTable(client ceresdb.Client, tableName string,
 	withTmpl := `with (
 		enable_ttl = 'false',
 		num_rows_per_row_group='%d',
-		storage_format = '%s'
+		storage_format = '%s',
+		update_mode='%s'
 		);`
 
 	// Make sql
@@ -98,7 +99,7 @@ func (d *dbCreator) createTable(client ceresdb.Client, tableName string,
 	if d.config.PartitionKeys != "" {
 		sql = sql + fmt.Sprintf(partTmpl, d.config.PartitionKeys) + "\n"
 	}
-	sql = sql + fmt.Sprintf(withTmpl, d.config.RowGroupSize, d.config.StorageFormat)
+	sql = sql + fmt.Sprintf(withTmpl, d.config.RowGroupSize, d.config.StorageFormat, d.config.UpdateMode)
 
 	// Execute
 	_, err := client.SQLQuery(context.TODO(), ceresdb.SQLQueryRequest{

@@ -20,6 +20,7 @@ type SpecificConfig struct {
 	PrimaryKeys   string `yaml:"primaryKeys" mapstructure:"primaryKeys"`
 	PartitionKeys string `yaml:"partitionKeys" mapstructure:"partitionKeys"`
 	AccessMode    string `yaml:"accessMode" mapstructure:"accessMode"`
+	UpdateMode    string `yaml:"updateMode" mapstructure:"updateMode"`
 }
 
 func parseSpecificConfig(v *viper.Viper) (*SpecificConfig, error) {

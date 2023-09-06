@@ -57,6 +57,11 @@ func (vm vmTarget) TargetSpecificFlags(flagPrefix string, flagSet *pflag.FlagSet
 		"direct",
 		"Access mode of ceresdb client",
 	)
+	flagSet.String(
+		flagPrefix+"update-mode",
+		"OVERWRITE",
+		"Update mode when insert",
+	)
 }
 
 func (vm vmTarget) TargetName() string {
