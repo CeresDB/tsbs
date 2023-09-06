@@ -52,6 +52,11 @@ func (vm vmTarget) TargetSpecificFlags(flagPrefix string, flagSet *pflag.FlagSet
 		"",
 		"Partition keys used when create partitioned table",
 	)
+	flagSet.Uint32(
+		flagPrefix+"partition-num",
+		4,
+		"Partition keys used when create partitioned table",
+	)
 	flagSet.String(
 		flagPrefix+"access-mode",
 		"direct",

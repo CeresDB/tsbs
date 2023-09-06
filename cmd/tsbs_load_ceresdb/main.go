@@ -34,6 +34,7 @@ func initProgramOptions() (*ceresdb.SpecificConfig, load.BenchmarkRunner, *load.
 	primaryKeys := viper.GetString("primary-keys")
 	rowGroupSize := viper.GetInt64("row-group-size")
 	partitionKeys := viper.GetString("partition-keys")
+	partitionNum := viper.GetUint32("partition-num")
 	accessMode := viper.GetString("access-mode")
 	updateMode := viper.GetString("update-mode")
 	loader := load.GetBenchmarkRunner(loaderConf)
@@ -43,6 +44,7 @@ func initProgramOptions() (*ceresdb.SpecificConfig, load.BenchmarkRunner, *load.
 		RowGroupSize:  rowGroupSize,
 		PrimaryKeys:   primaryKeys,
 		PartitionKeys: partitionKeys,
+		PartitionNum:  partitionNum,
 		AccessMode:    accessMode,
 		UpdateMode:    updateMode,
 	}, loader, &loaderConf

@@ -19,6 +19,7 @@ type SpecificConfig struct {
 	RowGroupSize  int64  `yaml:"rowGroupSize" mapstructure:"rowGroupSize"`
 	PrimaryKeys   string `yaml:"primaryKeys" mapstructure:"primaryKeys"`
 	PartitionKeys string `yaml:"partitionKeys" mapstructure:"partitionKeys"`
+	PartitionNum  uint32 `yaml:"partitionKeys" mapstructure:"partitionNum"`
 	AccessMode    string `yaml:"accessMode" mapstructure:"accessMode"`
 	UpdateMode    string `yaml:"updateMode" mapstructure:"updateMode"`
 }

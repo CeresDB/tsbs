@@ -86,7 +86,7 @@ func (d *dbCreator) createTable(client ceresdb.Client, tableName string,
 		%s,
 		primary key(%s)
 		)`
-	partTmpl := `partition by key (%s) partitions 4`
+	partTmpl := `partition by key (%s) partitions %v`
 	withTmpl := `with (
 		enable_ttl = 'false',
 		num_rows_per_row_group='%d',
@@ -97,7 +97,7 @@ func (d *dbCreator) createTable(client ceresdb.Client, tableName string,
 	// Make sql
 	sql := fmt.Sprintf(crTmpl, tableName, strings.Join(columnDefs, ","), d.config.PrimaryKeys) + "\n"
 	if d.config.PartitionKeys != "" {
-		sql = sql + fmt.Sprintf(partTmpl, d.config.PartitionKeys) + "\n"
+		sql = sql + fmt.Sprintf(partTmpl, d.config.PartitionKeys, d.config.PartitionNum) + "\n"
 	}
 	sql = sql + fmt.Sprintf(withTmpl, d.config.RowGroupSize, d.config.StorageFormat, d.config.UpdateMode)
 
